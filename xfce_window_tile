@@ -1,0 +1,21 @@
+#!/bin/bash
+
+xfconf-query -c xfce4-keyboard-shortcuts -n \
+-p "/xfwm4/custom/<Super>Left" \
+-t string \
+-s tile_left_key
+
+xfconf-query -c xfce4-keyboard-shortcuts -n \
+-p "/xfwm4/custom/<Super>Right" \
+-t string \
+-s tile_right_key
+
+xfconf-query -c xfce4-keyboard-shortcuts -n \
+-p "/xfwm4/custom/<Super>Up" \
+-t string \
+-s tile_up_key
+
+xfconf-query -c xfce4-keyboard-shortcuts -n \
+-p "/xfwm4/custom/<Super>Down" \
+-t string \
+-s tile_down_key
