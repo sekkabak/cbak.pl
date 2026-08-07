@@ -1,21 +1,137 @@
 #!/bin/bash
 
-xfconf-query -c xfce4-keyboard-shortcuts -n \
+#xfconf-query -c xfce4-keyboard-shortcuts -n \
+#-p "/xfwm4/custom/<Super>Left" \
+#-t string \
+#-s tile_left_key
+#
+#xfconf-query -c xfce4-keyboard-shortcuts -n \
+#-p "/xfwm4/custom/<Super>Right" \
+#-t string \
+#-s tile_right_key
+#
+#xfconf-query -c xfce4-keyboard-shortcuts -n \
+#-p "/xfwm4/custom/<Super>Up" \
+#-t string \
+#-s tile_up_key
+#
+#xfconf-query -c xfce4-keyboard-shortcuts -n \
+#-p "/xfwm4/custom/<Super>Down" \
+#-t string \
+#-s tile_down_key
+
+
+
+
+
+#!/bin/bash
+set -e
+
+echo "[+] Installing dependencies..."
+sudo apt update
+sudo apt install -y wmctrl xdotool xfconf
+
+BIN_DIR="$HOME/bin"
+
+echo "[+] Creating $BIN_DIR..."
+mkdir -p "$BIN_DIR"
+
+cat > "$BIN_DIR/tile-left" <<'EOF'
+#!/bin/bash
+W=$(xdotool getdisplaygeometry | awk '{print $1}')
+H=$(xdotool getdisplaygeometry | awk '{print $2}')
+wmctrl -r :ACTIVE: -e 0,0,0,$((W/2)),$H
+EOF
+
+cat > "$BIN_DIR/tile-right" <<'EOF'
+#!/bin/bash
+W=$(xdotool getdisplaygeometry | awk '{print $1}')
+H=$(xdotool getdisplaygeometry | awk '{print $2}')
+wmctrl -r :ACTIVE: -e 0,$((W/2)),0,$((W/2)),$H
+EOF
+
+cat > "$BIN_DIR/tile-up" <<'EOF'
+#!/bin/bash
+W=$(xdotool getdisplaygeometry | awk '{print $1}')
+H=$(xdotool getdisplaygeometry | awk '{print $2}')
+wmctrl -r :ACTIVE: -e 0,0,0,$W,$((H/2))
+EOF
+
+cat > "$BIN_DIR/tile-down" <<'EOF'
+#!/bin/bash
+W=$(xdotool getdisplaygeometry | awk '{print $1}')
+H=$(xdotool getdisplaygeometry | awk '{print $2}')
+wmctrl -r :ACTIVE: -e 0,0,$((H/2)),$W,$((H/2))
+EOF
+
+chmod +x "$BIN_DIR"/tile-*
+
+echo "[+] Removing XFCE conflicting shortcuts..."
+
+xfconf-query \
+-c xfce4-keyboard-shortcuts \
 -p "/xfwm4/custom/<Super>Left" \
--t string \
--s tile_left_key
+-r 2>/dev/null || true
 
-xfconf-query -c xfce4-keyboard-shortcuts -n \
+xfconf-query \
+-c xfce4-keyboard-shortcuts \
 -p "/xfwm4/custom/<Super>Right" \
--t string \
--s tile_right_key
+-r 2>/dev/null || true
 
-xfconf-query -c xfce4-keyboard-shortcuts -n \
+xfconf-query \
+-c xfce4-keyboard-shortcuts \
 -p "/xfwm4/custom/<Super>Up" \
--t string \
--s tile_up_key
+-r 2>/dev/null || true
 
-xfconf-query -c xfce4-keyboard-shortcuts -n \
+xfconf-query \
+-c xfce4-keyboard-shortcuts \
 -p "/xfwm4/custom/<Super>Down" \
+-r 2>/dev/null || true
+
+
+echo "[+] Creating XFCE shortcuts..."
+
+xfconf-query \
+-c xfce4-keyboard-shortcuts \
+-n \
+-p "/commands/custom/<Super>Left" \
 -t string \
--s tile_down_key
+-s "$BIN_DIR/tile-left"
+
+xfconf-query \
+-c xfce4-keyboard-shortcuts \
+-n \
+-p "/commands/custom/<Super>Right" \
+-t string \
+-s "$BIN_DIR/tile-right"
+
+xfconf-query \
+-c xfce4-keyboard-shortcuts \
+-n \
+-p "/commands/custom/<Super>Up" \
+-t string \
+-s "$BIN_DIR/tile-up"
+
+xfconf-query \
+-c xfce4-keyboard-shortcuts \
+-n \
+-p "/commands/custom/<Super>Down" \
+-t string \
+-s "$BIN_DIR/tile-down"
+
+
+echo "[+] Restarting XFCE keyboard daemon..."
+
+xfsettingsd --replace >/dev/null 2>&1 &
+
+echo
+echo "======================================"
+echo " XFCE tiling shortcuts installed"
+echo "======================================"
+echo
+echo "Super + Left   -> tile left"
+echo "Super + Right  -> tile right"
+echo "Super + Up     -> tile top"
+echo "Super + Down   -> tile bottom"
+echo
+echo "Log out/in if shortcuts do not activate."
