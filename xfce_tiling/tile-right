@@ -1,0 +1,21 @@
+#!/bin/bash
+
+SCREEN_W=$(xdotool getdisplaygeometry | awk '{print $1}')
+
+WORKAREA=$(xprop -root _NET_WORKAREA | grep -o '[0-9]\+, [0-9]\+, [0-9]\+, [0-9]\+' | head -1)
+
+WORK_X=$(echo "$WORKAREA" | cut -d',' -f1 | tr -d ' ')
+WORK_Y=$(echo "$WORKAREA" | cut -d',' -f2 | tr -d ' ')
+WORK_W=$(echo "$WORKAREA" | cut -d',' -f3 | tr -d ' ')
+WORK_H=$(echo "$WORKAREA" | cut -d',' -f4 | tr -d ' ')
+
+MARGIN=5
+BOTTOM=30
+
+HALF_W=$((WORK_W/2))
+
+wmctrl -r :ACTIVE: -e 0,\
+$((WORK_X+HALF_W+MARGIN)),\
+$((WORK_Y+MARGIN)),\
+$((HALF_W-MARGIN*2)),\
+$((WORK_H-MARGIN-BOTTOM))
